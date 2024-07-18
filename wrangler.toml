@@ -1,11 +1,11 @@
-name = "forest-web"
+name = "forest-explorer"
 main = "build/worker/shim.mjs"
 compatibility_date = "2024-07-13"
 # ChainSafe Static Hosting
 account_id = '2238a825c5aca59233eab1f221f7aefb'
 
 routes = [
-	{ pattern = "forest-leshy.chainsafe.dev/*", zone_name = "chainsafe.dev" }
+	{ pattern = "forest-explorer.chainsafe.dev", custom_domain = true }
 ]
 
 [build]
