@@ -1,5 +1,5 @@
 [package]
-name = "forest-web"
+name = "forest-explorer"
 version = "0.1.0"
 edition = "2021"
 authors = [ "Forest Team <forest@chainsafe.io>" ]
