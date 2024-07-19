@@ -11,9 +11,6 @@ async fn main() -> Result<(), Box<dyn Error + Send + Sync>> {
     cap.set_headless()?;
     let chrome = WebDriver::new(CHROME_DRIVER_URL, cap).await?;
     chrome.goto(WEBPAGE_URL).await?;
-    // let active = chrome.find(By::Tag("html")).await?;
-    // println!("{}", active.outer_html().await?);
-    // chrome.quit().await?;
 
     Ok(())
 }
