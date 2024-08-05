@@ -1,5 +1,7 @@
 name: Deploy
-
+concurrency:
+  group: "${{ github.workflow }}-${{ github.ref }}"
+  cancel-in-progress: "${{ github.ref != 'refs/heads/main' }}"
 on:
   pull_request:
     branches:
@@ -7,40 +9,50 @@ on:
   push:
     branches:
       - main
-
+env:
+  CACHE_TIMEOUT_MINUTES: 5
+  SCCACHE_GHA_ENABLED: "true"
+  RUSTC_WRAPPER: sccache
+  CC: sccache clang
+  CXX: sccache clang++
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
+      - name: Setup sccache
+        uses: mozilla-actions/sccache-action@v0.0.5
+        timeout-minutes: "${{ fromJSON(env.CACHE_TIMEOUT_MINUTES) }}"
+        continue-on-error: true
 
-    - name: Setup Rust
-      uses: actions-rust-lang/setup-rust-toolchain@v1
+      - name: Checkout code
+        uses: actions/checkout@v4
 
-    - name: Configure caching
-      uses: Swatinem/rust-cache@v2
+      - name: Setup Rust
+        uses: actions-rust-lang/setup-rust-toolchain@v1
 
-    - name: Install wasm-pack
-      run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+      - name: Configure caching
+        uses: Swatinem/rust-cache@v2
 
-    - uses: sigoden/install-binary@v1
-      with:
-        repo: WebAssembly/binaryen
-        name: wasm-opt
+      - name: Install wasm-pack
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
 
-    - name: Install worker-build
-      run: cargo install --locked worker-build
+      - uses: sigoden/install-binary@v1
+        with:
+          repo: WebAssembly/binaryen
+          name: wasm-opt
 
-    - name: Dry Run
-      if: github.ref != 'refs/heads/main'
-      uses: cloudflare/wrangler-action@v3
-      with:
-        command: deploy --dry-run
+      - name: Install worker-build
+        run: cargo install --locked worker-build
 
-    - name: Publish
-      if: github.ref == 'refs/heads/main'
-      uses: cloudflare/wrangler-action@v3
-      with:
-        apiToken: ${{ secrets.CF_API_TOKEN }}
+      - name: Dry Run
+        if: github.ref != 'refs/heads/main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          command: deploy --dry-run
+
+      - name: Publish
+        if: github.ref == 'refs/heads/main'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
