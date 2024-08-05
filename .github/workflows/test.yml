@@ -34,16 +34,13 @@ jobs:
       run: cargo install --locked worker-build
 
     - uses: nanasess/setup-chromedriver@v2
-      with:
-        # Optional: do not specify to match Chrome's version
-        chromedriver-version: '126.0.6478.182'
+
     - run: |
         export DISPLAY=:99
         chromedriver &
 
     - name: Run website
       run: |
-        npx wrangler@latest build
         npx wrangler@latest dev &
         echo "waiting"
         timeout 120 sh -c 'until nc -z $0 $1; do sleep 1; done' 127.0.0.1 8787
